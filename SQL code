@@ -1,0 +1,32 @@
+1) Are there any customers that have never placed an order?
+SELECT * FROM [Customers]
+WHERE CustomerID not in(SELECT CustomerID FROM [Orders]) or
+SELECT * FROM [Customers]
+LEFT JOIN Orders On Customers.CustomerID = Orders.CustomerID
+WHERE Orders.CustomerID IS NULL
+
+2) What does the distribution of revenues from orders look like?
+CREATE TABLE Revenues (
+OrderID int,
+Revenue decimal
+)
+INSERT INTO Revenues
+SELECT OrderDetails.OrderID as OrderID, SUM(OrderDetails.Quantity*Products.Price) as Revenue FROM Orderdetails
+LEFT JOIN Orders
+ON Orders.OrderID=OrderDetails.OrderID
+LEFT JOIN Products
+ON Products.ProductID=OrderDetails.ProductID
+Group by OrderDetails.OrderID
+SELECT count(case when 0<= Revenue and Revenue <=4000 then Revenue End) as in_range_0_4000,
+count(case when 4000< Revenue and Revenue <=8000 then Revenue End) as in_range_4000_8000, 
+count(case when 8000< Revenue and Revenue <=12000 then Revenue End) as in_range_8000_12000, 
+count(case when 12000< Revenue and Revenue <=16000 then Revenue End) as in_range_12000_16000, 
+count(case when 16000< Revenue and Revenue <=20000 then Revenue End) as in_range_16000_20000
+From Revenues
+It’s a right-skewed distribution.
+
+3) How many orders do we have?
+SELECT count(distinct(OrderID)) FROM OrderDetails
+
+4) What are our top 10 customers (by revenue)?
+SELECT OrderID FROM [Revenues] Order by Revenue desc limit 10
